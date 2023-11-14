@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name ="google-signin-client_id" content="515485639470-b2bmvophgjaptqotdvej0jmk8ehg10rd.apps.googleusercontent.com">
+  <title>Document</title>
+</head>
+<body>
+  <div class="row my-5 justify-content-center">
+    <div class="col-8 col-md-6 col-lg-4">
+      <h3 class="text-center mb-5">로그인</h3>
+      <form name="frm" method="post" action="/login">
+        <div class="input-group my-2">
+          <div class="input-group-text">이 메 일</div>
+          <input class="form-control" name="email" />
+        </div>
+        <div class="input-group">
+          <div class="input-group-text">비밀번호</div>
+          <input
+            class="form-control"
+            name="password"
+            type="password"
+          />
+        </div>
+        <div class="my-3">
+          <button class="btn btn-success w-100" type="submit">로그인</button>
+        </div>
+  <!-- GgCustomLogin -->
+        <ul> 
+          <div class="login-box">
+            <a href="#" class="social-button" id="GgCustomLogin"> <span>Connect with Google</span></a>
+          </div>
+         </ul>
+
+         <ul> 
+            <li onclick="kakaoLogin();">
+              <div class="login-box1"> 
+                <a href="javascript:void(0)" class="social-button" id = "kkCustomLogin">
+                    <span>Connect with KaKao</span>
+                </a>
+            </div>
+          </li>
+         </ul>
+
+        
+        <div class="text-end mt-3"><a href="/join">회원가입</a></div>
+      </form>
+    </div>
+  </div>
+<!--tomato@hot.com   -->
+
+  <script type = "module">
+    import { app } from "/javascripts/firebase.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js"
+    const auth = getAuth(app);
+    console.log(auth);
+    
+    //로그인 버튼을 눌렀을 때
+    //submit이슈 - submit이벤트를 처리할때 캡쳐링으로 인한 이벤트 전이가 발생함 - 방어해야함
+    $(frm).on("submit", function(e){
+      console.log('로그인버튼 클릭');
+      e.preventDefault();
+      //사용자가 화면에 입력한 이멜 주소 담기
+      let email = $(frm.email).val();
+      //사용자가 화면에 입력한 비번 담기
+      let password = $(frm.password).val();
+      console.log(`${email} ${password}`);
+    //https://firebase.google.com/docs/auth/web/start?hl=ko&authuser=0
+    //기존 사용자가 자신의 이메일 주소와 비밀번호를 사용해 로그인할 수 있는 양식을 만듭니다. 
+    //사용자가 양식을 작성하면 signInWithEmailAndPassword 메서드를 호출합니다.
+    
+      signInWithEmailAndPassword(auth, email, password) // 함수다. 이벤트처리x
+    .then((res) => { // userCredential 객체에는 로그인에 성공한 사용자에 대한 정보가 포함되어 있다.
+      console.log(res);//[object, Object]
+
+      // Signed in 
+      // 여기 res엔 실제 사용자에 대한 정보가 들어가있다.
+      const user = res.user;
+      //JSON.stringify(user)
+      console.log(`user ===> ${JSON.stringify(user)}`);//[object, Object]  - JSON.parse():JSON-Array
+      console.log(`uid ====> ${user.uid}`);
+      console.log(`email ====> ${user.email}`);
+      localStorage.setItem("uid",`${user.uid}`)
+      localStorage.setItem("email",`${user.email}`)
+      const storedUID = localStorage.getItem("uid");
+      const storedEmail = localStorage.getItem("email");
+      // Firebase Authentication은 각 사용자에게 고유한 uid를 할당
+      window.location.href = "/";
+
+      if (user.uid && user.email){
+        alert("로그인성공!!")
+        window.location.href = "/";
+      }else{
+        alert("회원 정보를 확인하세요.");
+      }
+
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      alert(`로그인 실패: ${errorMessage}`);
+    });
+    
+    })
+    
+    </script>
+
+
+
+  <script type = "module">
+    import {app} from "./javascripts/firebase.js";
+    import AuthLogic from "./javascripts/authLogic.js";
+    import {loginGoogle} from "./javascripts/authLogic.js";
+    import {getAuth} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+
+
+    const auth1 = getAuth(app);
+    const authlogic = new AuthLogic(); // 로그인 처리를 하는 모듈의 클래스를 생성'
+    const googlelogin = document.querySelector('#GgCustomLogin')
+    googlelogin.addEventListener('click', async(event)=>{
+      event.preventDefault(); // 캡쳐링을 막아준다.
+      const result = await loginGoogle(auth1, authlogic.googleProvider)
+      window.location.href = "/";
+
+    })
+
+</script>
+
+
+<!-- 카카오 스크립트 -->
+<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+<script>
+Kakao.init('API키설정하세요'); //발급받은 키 중 javascript키를 사용해준다.
+console.log(Kakao.isInitialized()); // sdk초기화여부판단
+//카카오로그인
+function kakaoLogin() {
+    Kakao.Auth.login({
+      success: function (response) {
+        Kakao.API.request({
+          url: '/v2/user/me',
+          success: function (response) {
+        	  console.log(response)
+            console.log(JSON.stringify(response))
+            let nickname = response.kakao_account.profile.nickname;
+            let email = response.kakao_account.email
+            console.log(nickname)
+            localStorage.setItem('nickname', `${nickname}`);
+            if(localStorage.getItem('nickname')){
+              location.href = '/';
+              alert("카카오 로그인 성공했습니다")
+            }
+
+          },
+          fail: function (error) {
+            alert('카카오 로그인에 실패했습니다. 관리자에게 문의하세요'+JSON.stringify(error));
+          },
+        })
+      },
+      fail: function (error) {
+        console.log(error)
+      },
+    })
+  }
+</script>
+
+
+
+</body>
+</html>
+
+
+
+
+

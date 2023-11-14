@@ -403,18 +403,18 @@ template
 
 const boardsStr = localStorage.getItem("boards")
 console.log(boardsStr)
-```
+
 [{"index" : 0, "subject" : "aaa", "writer" : "bbb", "content" : "ccc" , "date" : "2022-11-20", "views" : 0},
 {"index" : 1, "subject" : "aaa", "writer" : "bbb", "content" : "ccc" , "date" : "2022-11-20", "views" : 0}]
-```
+
 
 JSON.parse(boardsStr)로 하면 
 
 JSON.parse(boardsStr)
-```
+
 0:{index : 0, subject : 'aaa', writer : 'bbb', content:'ccc', date : '2022-11-20'}
 1:{index : 0, subject : 'aaa', writer : 'bbb', content:'ccc', date : '2022-11-20'}
-```
+
 로 저장된다.
 
 쿼리스트링을 이용하여 해당 페이지에 들어가야 되기 때문에 
